@@ -93,7 +93,9 @@ class UploadAPIView(APIView):
         errors[key]["invalid_items"].append(item)
 
     def post(self, request):
-        file_uploaded = request.FILES.get("file_uploaded")
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        file_uploaded = serializer.validated_data["file_uploaded"]
         decoded_file = file_uploaded.read().decode("utf-8").splitlines()
         reader = csv.DictReader(decoded_file, delimiter="\t")
 

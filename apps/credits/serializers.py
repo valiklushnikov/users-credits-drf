@@ -1,3 +1,4 @@
+from django.core.validators import FileExtensionValidator
 from django.utils.timezone import now
 
 from rest_framework import serializers
@@ -58,7 +59,9 @@ class CreditsSerializer(serializers.ModelSerializer):
 
 
 class UploadSerializer(serializers.Serializer):
-    file_uploaded = serializers.FileField()
+    file_uploaded = serializers.FileField(
+        validators=[FileExtensionValidator(allowed_extensions=["csv"])],
+    )
 
     class Meta:
         fields = ["file_uploaded"]
