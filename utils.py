@@ -35,18 +35,21 @@ def parse_csv_bulk_create_from_file(command=None, path=None, model=None, **kwarg
     command.stdout.write(f"Importing {path}...")
     instances_to_create = []
     extra_fields = {}
-    with open(path, newline="", encoding="utf-8") as f:
-        reader = csv.DictReader(f, delimiter="\t")
-        for row in reader:
-            filtered_data = {}
-            for key, value in row.items():
-                if key == "id":
-                    continue
-                if "id" in key:
-                    extra_fields[key] = value
-                if key in model_fields:
-                    filtered_data[key] = parse_date_field(value)
-            instances_to_create.append(model(**extra_fields, **filtered_data))
+    try:
+        with open(path, newline="", encoding="utf-8") as f:
+            reader = csv.DictReader(f, delimiter="\t")
+            for row in reader:
+                filtered_data = {}
+                for key, value in row.items():
+                    if key == "id":
+                        continue
+                    if "id" in key:
+                        extra_fields[key] = value
+                    if key in model_fields:
+                        filtered_data[key] = parse_date_field(value)
+                instances_to_create.append(model(**extra_fields, **filtered_data))
+    except FileNotFoundError:
+        raise FileNotFoundError({"message": f"File {path} not found"})
     with transaction.atomic():
         model.objects.bulk_create(instances_to_create, batch_size=500)
     command.stdout.write(

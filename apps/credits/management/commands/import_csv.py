@@ -38,8 +38,13 @@ class Command(BaseCommand):
                 "model": Payments,
             },
         ]
-        for data in data_to_parse:
-            path = data.get("path")
-            model = data.get("model")
-            parse_csv_bulk_create_from_file(self, path=path, model=model)
+        try:
+            for data in data_to_parse:
+                path = data.get("path")
+                model = data.get("model")
+                parse_csv_bulk_create_from_file(self, path=path, model=model)
+        except FileNotFoundError as e:
+            self.stdout.write(
+                self.style.ERROR(str(e))
+            )
 
