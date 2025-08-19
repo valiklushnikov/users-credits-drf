@@ -1,6 +1,7 @@
 import csv
 
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from django.db.models import (
     BooleanField,
     Sum,
@@ -84,7 +85,7 @@ class CreditsAPIView(APIView):
 )
 class UploadAPIView(APIView):
     serializer_class = serializers.UploadSerializer
-    parser_classes = (MultiPartParser, FormParser)
+    parser_classes = (MultiPartParser,)
 
     @staticmethod
     def add_errors_test(errors, key, message, item):
@@ -139,7 +140,8 @@ class UploadAPIView(APIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        models.Plans.objects.bulk_create(plans_to_create, batch_size=500)
+        with transaction.atomic():
+            models.Plans.objects.bulk_create(plans_to_create, batch_size=500)
         return Response(
             {"message": "Plans added successfully"}, status=status.HTTP_201_CREATED
         )

@@ -1,7 +1,10 @@
 import re
-from datetime import datetime
-from django.utils.timezone import make_aware
 import csv
+
+from datetime import datetime
+from django.db import transaction
+from django.utils.timezone import make_aware
+
 from apps.credits.models import Plans
 
 
@@ -44,7 +47,8 @@ def parse_csv_bulk_create_from_file(command=None, path=None, model=None, **kwarg
                 if key in model_fields:
                     filtered_data[key] = parse_date_field(value)
             instances_to_create.append(model(**extra_fields, **filtered_data))
-    model.objects.bulk_create(instances_to_create)
+    with transaction.atomic():
+        model.objects.bulk_create(instances_to_create, batch_size=500)
     command.stdout.write(
         command.style.SUCCESS(
             f"Downloaded: {len(instances_to_create)} instances from {path}"

@@ -12,6 +12,7 @@ class CreditsSerializer(serializers.ModelSerializer):
     payments_body = serializers.SerializerMethodField()
     payments_percent = serializers.SerializerMethodField()
 
+
     class Meta:
         model = models.Credits
         fields = [
